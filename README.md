@@ -23,15 +23,17 @@ Hospitals and blood banks face challenges in:
 
 ## 👥 Team Members
 We are a dedicated team of engineers working on this humanitarian initiative:
-* **Ghena Mousa** (220221104) - *Project Owner*
-* **Nourhan Elmassry** (220220164)
-* **Aya Murtaja** (220221882)
-* **Deema Redwan** (220220873)
-* **Sja Miqdad** (220232309)
-* **Hadeel Abu Kmail** (220221693)
-* **Majeda Skaik** (220220506)
-* **Tasneem Alqirnawi** (220221010)
-* **Sara Rayyan** (220232116)
+| Name | ID | Role |
+| :--- | :--- | :--- |
+| **Ghena Mousa** | 220221104 | Project Owner |
+| **Nourhan Elmassry** | 220220164 | Frontend Developer |
+| **Aya Murtaja** | 220221882 | UI/UX Designer |
+| **Deema Redwan** | 220220873 | Frontend Developer |
+| **Sja Miqdad** | 220232309 | Database Administrator |
+| **Hadeel Abu Kmail** | 220221693 | Backend Developer |
+| **Majeda Skaik** | 220220506 | Backend Developer |
+| **Tasneem Alqirnawi** | 220221010 | Backend Developer |
+| **Sara Rayyan** | 220232116 | Database Specialist |
 
 ---
 
