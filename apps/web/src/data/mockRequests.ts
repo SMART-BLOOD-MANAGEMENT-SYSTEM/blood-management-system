@@ -1,0 +1,73 @@
+import { mockBloodBanks } from "./mockBloodBanks";
+import type { BloodRequest } from "../types/request";
+
+const hoursAgo = (hours: number) => new Date(Date.now() - 1000 * 60 * 60 * hours).toISOString();
+
+export const mockRequests: BloodRequest[] = [
+  {
+    id: 1001,
+    bank_id: 1,
+    patient_name: "Mariam Saleh",
+    blood_type: "A+",
+    required_units: 3,
+    urgency_level: "critical",
+    status: "pending",
+    request_date: hoursAgo(2),
+    blood_bank: mockBloodBanks[0],
+  },
+  {
+    id: 1002,
+    bank_id: 1,
+    patient_name: "Yousef Darwish",
+    blood_type: "A+",
+    required_units: 2,
+    urgency_level: "critical",
+    status: "pending",
+    request_date: hoursAgo(2),
+    blood_bank: mockBloodBanks[0],
+  },
+  {
+    id: 1003,
+    bank_id: 1,
+    patient_name: "Lina Nassar",
+    blood_type: "A+",
+    required_units: 4,
+    urgency_level: "urgent",
+    status: "pending",
+    request_date: hoursAgo(2),
+    blood_bank: mockBloodBanks[0],
+  },
+  {
+    id: 1004,
+    bank_id: 1,
+    patient_name: "Hiba Barakat",
+    blood_type: "A+",
+    required_units: 1,
+    urgency_level: "normal",
+    status: "pending",
+    request_date: hoursAgo(2),
+    blood_bank: mockBloodBanks[0],
+  },
+  {
+    id: 1005,
+    bank_id: 1,
+    patient_name: "Omar Saleh",
+    blood_type: "A+",
+    required_units: 5,
+    urgency_level: "low",
+    status: "fulfilled",
+    request_date: hoursAgo(2),
+    blood_bank: mockBloodBanks[0],
+  },
+  {
+    id: 1006,
+    bank_id: 1,
+    patient_name: "Layan Daraghmeh",
+    blood_type: "A+",
+    required_units: 2,
+    urgency_level: "normal",
+    status: "pending",
+    request_date: hoursAgo(2),
+    blood_bank: mockBloodBanks[0],
+  },
+];
