@@ -26,7 +26,7 @@ We are a dedicated team of engineers working on this humanitarian initiative:
 | Name | ID | Role |
 | :--- | :--- | :--- |
 | **Ghena Mousa** | 220221104 | Project Owner |
-| **Nourhan Elmassry** | 220220164 | Frontend Developer |
+| **Nourhan Elmassry** | 220220164 | Frontend Developer & Scram Master|
 | **Aya Murtaja** | 220221882 | UI/UX Designer |
 | **Deema Redwan** | 220220873 | Frontend Developer |
 | **Sja Miqdad** | 220232309 | Database Administrator |
