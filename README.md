@@ -30,7 +30,7 @@ We are a dedicated team of engineers working on this humanitarian initiative:
 | **Aya Murtaja** | 220221882 | UI/UX Designer |
 | **Deema Redwan** | 220220873 | Frontend Developer |
 | **Sja Miqdad** | 220232309 | Database Administrator |
-| **Hadeel Abu Kmail** | 220221693 | Backend Developer |
+| **Hadeel Abu Kmail** | 220221693 | Frontend Developer |
 | **Majeda Skaik** | 220220506 | Backend Developer |
 | **Tasneem Alqirnawi** | 220221010 | Backend Developer |
 | **Sara Rayyan** | 220232116 | Database Specialist |
