@@ -38,7 +38,7 @@ export function LoginPage() {
             Send
           </button>
           <p>
-            Create new account? <a href="#sign-up">Sing up</a>
+            Create new account? <a href="#sign-up">Sign up</a>
           </p>
         </form>
       </section>

@@ -35,7 +35,7 @@ export function HomeQuickSearch({ variant = "home" }: { variant?: "home" | "logi
           <label>
             <span className="sr-only">Select blood type</span>
             <select defaultValue="">
-              <option value="">Select Blood typy</option>
+              <option value="">Select Blood type</option>
               <option value="A+">A+</option>
               <option value="A-">A-</option>
               <option value="B+">B+</option>
@@ -107,16 +107,16 @@ export function HomeAbout() {
 
 export function HomeHowItWorks() {
   const steps = [
-    { number: "1", title: "Cerate Doner Profile" },
+    { number: "1", title: "Create Donor Profile" },
     { number: "2", title: "Match & Connect" },
-    { number: "2", title: "Save A Life" },
+    { number: "3", title: "Save A Life" },
   ];
 
   return (
     <section className="how-it-works" aria-labelledby="how-title">
       <span className="blood-drop blood-drop--steps" aria-hidden="true"></span>
       <div className="home-section-inner">
-        <p className="home-kicker">Who It Works</p>
+        <p className="home-kicker">How It Works</p>
         <h2 id="how-title">Saving Lives Is Only Three Steps Away</h2>
         <div className="steps-grid">
           {steps.map((step) => (

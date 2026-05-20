@@ -52,7 +52,7 @@ export function DonorSearchPage() {
   const [successMessage, setSuccessMessage] = useState("");
 
   const bloodTypeOptions = useMemo<SelectOption[]>(
-    () => [{ label: "Select Blood typy", value: "" }, ...bloodTypes.map((bloodType) => ({ label: bloodType, value: bloodType }))],
+    () => [{ label: "Select Blood type", value: "" }, ...bloodTypes.map((bloodType) => ({ label: bloodType, value: bloodType }))],
     [],
   );
   const cityOptions = useMemo<SelectOption[]>(

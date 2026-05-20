@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
+import { AddRequestForm } from "../components/AddRequestForm";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { LoadingState } from "../components/LoadingState";
 import { RequestCard } from "../components/RequestCard";
-import { fetchBloodRequests } from "../services/requestService";
-import type { BloodRequest } from "../types/request";
+import { createBloodRequest, fetchBloodRequests } from "../services/requestService";
+import type { BloodRequest, NewBloodRequest } from "../types/request";
 
 export function RequestsPage() {
   const [requests, setRequests] = useState<BloodRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isAddRequestOpen, setIsAddRequestOpen] = useState(false);
 
   async function loadRequests() {
     setIsLoading(true);
@@ -29,6 +31,11 @@ export function RequestsPage() {
     void loadRequests();
   }, []);
 
+  async function handleCreateRequest(request: NewBloodRequest) {
+    const createdRequest = await createBloodRequest(request);
+    setRequests((currentRequests) => [createdRequest, ...currentRequests]);
+  }
+
   const urgentRequests = useMemo(
     () => requests.filter((request) => request.status === "pending" && (request.urgency_level === "critical" || request.urgency_level === "urgent")),
     [requests],
@@ -47,11 +54,32 @@ export function RequestsPage() {
         </div>
         <div className="hero-right">
           <div className="hero-circle"></div>
-          <button className="nav-cta page-cta" type="button">
-            Add New Request
+          <button
+            aria-controls="add-request"
+            aria-expanded={isAddRequestOpen}
+            className="nav-cta page-cta"
+            type="button"
+            onClick={() => setIsAddRequestOpen((isOpen) => !isOpen)}
+          >
+            {isAddRequestOpen ? "Close Request Form" : "Add New Request"}
           </button>
         </div>
       </section>
+
+      {isAddRequestOpen ? (
+        <section className="add-request-panel" id="add-request" aria-labelledby="add-request-title">
+          <div className="add-request-panel__header">
+            <div>
+              <p className="page-kicker">Facility Admin</p>
+              <h2 id="add-request-title">Create Blood Request</h2>
+            </div>
+            <button className="secondary-button" type="button" onClick={() => setIsAddRequestOpen(false)}>
+              Close
+            </button>
+          </div>
+          <AddRequestForm onCancel={() => setIsAddRequestOpen(false)} onSubmit={handleCreateRequest} />
+        </section>
+      ) : null}
 
       {isLoading ? <LoadingState /> : null}
       {error ? <ErrorState message={error} onRetry={loadRequests} /> : null}

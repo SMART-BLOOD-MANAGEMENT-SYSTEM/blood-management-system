@@ -8,6 +8,7 @@ const urgencyLevels: UrgencyLevel[] = ["critical", "urgent", "normal", "low"];
 type FormErrors = Partial<Record<keyof NewBloodRequest, string>>;
 
 interface AddRequestFormProps {
+  onCancel?: () => void;
   onSubmit: (request: NewBloodRequest) => Promise<void>;
 }
 
@@ -19,7 +20,7 @@ const initialForm: NewBloodRequest = {
   urgency_level: "critical",
 };
 
-export function AddRequestForm({ onSubmit }: AddRequestFormProps) {
+export function AddRequestForm({ onCancel, onSubmit }: AddRequestFormProps) {
   const [form, setForm] = useState<NewBloodRequest>(initialForm);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -149,6 +150,11 @@ export function AddRequestForm({ onSubmit }: AddRequestFormProps) {
 
       <div className="form-actions">
         {successMessage ? <p className="success-message">{successMessage}</p> : null}
+        {onCancel ? (
+          <button className="secondary-button" type="button" onClick={onCancel}>
+            Cancel
+          </button>
+        ) : null}
         <button className="primary-button" type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Submitting..." : "Submit Request"}
         </button>

@@ -5,8 +5,8 @@ import { AdminRequests } from "./admin/AdminRequests";
 
 export function AdminDashboard() {
   return (
-    <main className="page-shell page-shell--admin">
-      <section className="admin-workspace" aria-labelledby="admin-title">
+    <section className="page-shell page-shell--admin" id="admin">
+      <div className="admin-workspace" aria-labelledby="admin-title">
         <aside className="admin-sidebar" aria-label="Admin navigation">
           <img src="/sbms-logo.svg" alt="SBMS" />
           <nav>
@@ -36,7 +36,7 @@ export function AdminDashboard() {
             <AdminAppointments />
           </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
   );
 }
