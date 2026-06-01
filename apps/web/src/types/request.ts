@@ -27,6 +27,7 @@ export interface BloodRequest {
   urgency_level: UrgencyLevel;
   status: RequestStatus;
   request_date: string;
+  notes?: string | null;
   blood_bank?: BloodBankSummary;
 }
 
@@ -36,6 +37,7 @@ export interface NewBloodRequest {
   blood_type: BloodType;
   required_units: number;
   urgency_level: UrgencyLevel;
+  notes?: string;
 }
 
 export interface DonorProfile {

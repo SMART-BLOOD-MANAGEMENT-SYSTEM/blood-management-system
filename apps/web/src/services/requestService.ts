@@ -3,13 +3,12 @@ import { mockRequests } from "../data/mockRequests";
 import type { BloodBankSummary, BloodRequest, NewBloodRequest } from "../types/request";
 
 // ── API Configuration ───────────────────────────────────────────
-// Base URL for the backend API. Update this when the backend is deployed.
-// In Sprint 3, this will point to the real backend server.
-const API_BASE_URL = "/api";
+// Configure these from Vite when the backend is available.
+const viteEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
+const API_BASE_URL = viteEnv?.VITE_API_BASE_URL ?? "/api";
+const USE_REAL_API = viteEnv?.VITE_USE_REAL_API === "true";
 
-// Set to true once the backend is deployed and ready for integration.
-// When false, all functions fall back to mock data.
-const USE_REAL_API = false;
+let mockRequestStore: BloodRequest[] = [...mockRequests];
 
 // ── Error Handling ──────────────────────────────────────────────
 
@@ -84,9 +83,8 @@ async function handleResponse<T>(response: Response): Promise<T> {
  */
 export async function fetchBloodRequests(): Promise<BloodRequest[]> {
   if (!USE_REAL_API) {
-    // Fallback: return mock data with simulated network delay.
     return new Promise((resolve) => {
-      window.setTimeout(() => resolve(mockRequests), 350);
+      window.setTimeout(() => resolve([...mockRequestStore]), 350);
     });
   }
 
@@ -110,7 +108,7 @@ export async function fetchBloodRequestsByBank(bankId: number): Promise<BloodReq
   if (!USE_REAL_API) {
     return new Promise((resolve) => {
       window.setTimeout(() => {
-        const filtered = mockRequests.filter((r) => r.bank_id === bankId);
+        const filtered = mockRequestStore.filter((r) => r.bank_id === bankId);
         resolve(filtered);
       }, 300);
     });
@@ -166,14 +164,16 @@ export async function createBloodRequest(request: NewBloodRequest): Promise<Bloo
   if (!USE_REAL_API) {
     return new Promise((resolve) => {
       window.setTimeout(() => {
-        resolve({
+        const createdRequest: BloodRequest = {
           ...request,
           id: Date.now(),
           patient_name: request.patient_name?.trim() || null,
           status: "pending",
           request_date: new Date().toISOString(),
           blood_bank: mockBloodBanks.find((bank) => bank.id === request.bank_id),
-        });
+        };
+        mockRequestStore = [createdRequest, ...mockRequestStore];
+        resolve(createdRequest);
       }, 250);
     });
   }
@@ -210,8 +210,8 @@ export async function updateBloodRequestStatus(
   if (!USE_REAL_API) {
     return new Promise((resolve) => {
       window.setTimeout(() => {
-        const found = mockRequests.find((r) => r.id === requestId);
-        resolve({
+        const found = mockRequestStore.find((r) => r.id === requestId);
+        const updatedRequest = {
           ...(found ?? {
             id: requestId,
             bank_id: 1,
@@ -221,7 +221,11 @@ export async function updateBloodRequestStatus(
             request_date: new Date().toISOString(),
           }),
           status,
-        } as BloodRequest);
+        } as BloodRequest;
+        mockRequestStore = mockRequestStore.map((request) =>
+          request.id === requestId ? updatedRequest : request,
+        );
+        resolve(updatedRequest);
       }, 200);
     });
   }
@@ -233,6 +237,68 @@ export async function updateBloodRequestStatus(
   });
 
   return handleResponse<BloodRequest>(response);
+}
+
+export type BloodRequestUpdate = Partial<
+  Pick<BloodRequest, "patient_name" | "blood_type" | "required_units" | "urgency_level" | "status">
+>;
+
+export async function updateBloodRequest(
+  requestId: number,
+  updates: BloodRequestUpdate,
+): Promise<BloodRequest> {
+  if (!USE_REAL_API) {
+    return new Promise((resolve, reject) => {
+      window.setTimeout(() => {
+        const currentRequest = mockRequestStore.find((request) => request.id === requestId);
+        if (!currentRequest) {
+          reject(new ApiError(404, `Blood request with ID ${requestId} not found.`));
+          return;
+        }
+
+        const updatedRequest: BloodRequest = {
+          ...currentRequest,
+          ...updates,
+          patient_name:
+            typeof updates.patient_name === "string"
+              ? updates.patient_name.trim() || null
+              : currentRequest.patient_name,
+        };
+        mockRequestStore = mockRequestStore.map((request) =>
+          request.id === requestId ? updatedRequest : request,
+        );
+        resolve(updatedRequest);
+      }, 220);
+    });
+  }
+
+  const response = await fetch(`${API_BASE_URL}/blood-requests/${requestId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  });
+
+  return handleResponse<BloodRequest>(response);
+}
+
+export async function deleteBloodRequest(requestId: number): Promise<void> {
+  if (!USE_REAL_API) {
+    return new Promise((resolve) => {
+      window.setTimeout(() => {
+        mockRequestStore = mockRequestStore.filter((request) => request.id !== requestId);
+        resolve();
+      }, 180);
+    });
+  }
+
+  const response = await fetch(`${API_BASE_URL}/blood-requests/${requestId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!response.ok) {
+    await handleResponse<unknown>(response);
+  }
 }
 
 // ── Blood Banks API ─────────────────────────────────────────────
@@ -311,6 +377,24 @@ export interface InventoryRecord {
   last_updated?: string;
 }
 
+export interface NewInventoryRecord {
+  bank_id: number;
+  blood_type: string;
+  quantity_units: number;
+  expiration_date: string;
+}
+
+export type InventoryRecordUpdate = Partial<
+  Pick<InventoryRecord, "blood_type" | "quantity_units" | "expiration_date">
+>;
+
+let mockInventoryStore: InventoryRecord[] = [
+  { id: 1, bank_id: 1, blood_type: "O-", quantity_units: 7, expiration_date: "2026-06-10" },
+  { id: 2, bank_id: 1, blood_type: "A+", quantity_units: 22, expiration_date: "2026-06-15" },
+  { id: 3, bank_id: 1, blood_type: "B-", quantity_units: 9, expiration_date: "2026-06-18" },
+  { id: 4, bank_id: 1, blood_type: "AB+", quantity_units: 15, expiration_date: "2026-06-20" },
+];
+
 /**
  * Fetch inventory records for a given blood bank.
  *
@@ -334,12 +418,7 @@ export async function fetchInventoryByBank(bankId: number): Promise<InventoryRec
   if (!USE_REAL_API) {
     return new Promise((resolve) => {
       window.setTimeout(() => {
-        resolve([
-          { id: 1, bank_id: bankId, blood_type: "O-", quantity_units: 7, expiration_date: "2026-06-10" },
-          { id: 2, bank_id: bankId, blood_type: "A+", quantity_units: 22, expiration_date: "2026-06-15" },
-          { id: 3, bank_id: bankId, blood_type: "B-", quantity_units: 9, expiration_date: "2026-06-18" },
-          { id: 4, bank_id: bankId, blood_type: "AB+", quantity_units: 15, expiration_date: "2026-06-20" },
-        ]);
+        resolve(mockInventoryStore.filter((record) => record.bank_id === bankId));
       }, 300);
     });
   }
@@ -366,18 +445,29 @@ export async function fetchInventoryByBank(bankId: number): Promise<InventoryRec
  */
 export async function updateInventoryRecord(
   recordId: number,
-  quantityUnits: number,
+  updates: number | InventoryRecordUpdate,
 ): Promise<InventoryRecord> {
+  const normalizedUpdates: InventoryRecordUpdate =
+    typeof updates === "number" ? { quantity_units: updates } : updates;
+
   if (!USE_REAL_API) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       window.setTimeout(() => {
-        resolve({
-          id: recordId,
-          bank_id: 1,
-          blood_type: "O-",
-          quantity_units: quantityUnits,
-          expiration_date: "2026-06-10",
-        });
+        const currentRecord = mockInventoryStore.find((record) => record.id === recordId);
+        if (!currentRecord) {
+          reject(new ApiError(404, `Inventory record with ID ${recordId} not found.`));
+          return;
+        }
+
+        const updatedRecord: InventoryRecord = {
+          ...currentRecord,
+          ...normalizedUpdates,
+          last_updated: new Date().toISOString(),
+        };
+        mockInventoryStore = mockInventoryStore.map((record) =>
+          record.id === recordId ? updatedRecord : record,
+        );
+        resolve(updatedRecord);
       }, 200);
     });
   }
@@ -385,10 +475,54 @@ export async function updateInventoryRecord(
   const response = await fetch(`${API_BASE_URL}/inventory/${recordId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ quantity_units: quantityUnits }),
+    body: JSON.stringify(normalizedUpdates),
   });
 
   return handleResponse<InventoryRecord>(response);
+}
+
+export async function createInventoryRecord(record: NewInventoryRecord): Promise<InventoryRecord> {
+  if (!USE_REAL_API) {
+    return new Promise((resolve) => {
+      window.setTimeout(() => {
+        const createdRecord: InventoryRecord = {
+          ...record,
+          id: Date.now(),
+          last_updated: new Date().toISOString(),
+        };
+        mockInventoryStore = [createdRecord, ...mockInventoryStore];
+        resolve(createdRecord);
+      }, 220);
+    });
+  }
+
+  const response = await fetch(`${API_BASE_URL}/inventory`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(record),
+  });
+
+  return handleResponse<InventoryRecord>(response);
+}
+
+export async function deleteInventoryRecord(recordId: number): Promise<void> {
+  if (!USE_REAL_API) {
+    return new Promise((resolve) => {
+      window.setTimeout(() => {
+        mockInventoryStore = mockInventoryStore.filter((record) => record.id !== recordId);
+        resolve();
+      }, 180);
+    });
+  }
+
+  const response = await fetch(`${API_BASE_URL}/inventory/${recordId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!response.ok) {
+    await handleResponse<unknown>(response);
+  }
 }
 
 // ── Appointments API (Admin) ────────────────────────────────────
