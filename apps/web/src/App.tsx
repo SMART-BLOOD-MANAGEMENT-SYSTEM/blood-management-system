@@ -24,6 +24,8 @@ import type {
 
 type View =
   | "public"
+  | "terms"
+  | "privacy"
   | "login"
   | "register"
   | "forgot"
@@ -273,6 +275,8 @@ function viewFromHash(hash: string): View {
   if (
     [
       "login",
+      "terms",
+      "privacy",
       "register",
       "forgot",
       "donor",
@@ -338,6 +342,15 @@ function getRequestUrgencyLabel(urgencyLevel: ApiUrgencyLevel): string {
   if (urgencyLevel === "urgent") return "Urgent";
   if (urgencyLevel === "low") return "Low";
   return "Normal";
+}
+
+function formatTimeLabel(value: string): string {
+  const [hourText, minuteText] = value.split(":");
+  const hour = Number.parseInt(hourText, 10);
+  if (Number.isNaN(hour) || !minuteText) return value;
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const normalizedHour = hour % 12 || 12;
+  return `${String(normalizedHour).padStart(2, "0")}:${minuteText} ${suffix}`;
 }
 
 function mapBloodRequestToCard(request: ApiBloodRequest): RequestCardData {
@@ -406,6 +419,8 @@ function App() {
 }
 
 function renderPublicView(view: View) {
+  if (view === "terms") return <LegalPage kind="terms" />;
+  if (view === "privacy") return <LegalPage kind="privacy" />;
   if (view === "login") return <Login />;
   if (view === "register") return <Register />;
   if (view === "forgot") return <ForgotPassword />;
@@ -433,12 +448,6 @@ function renderAdminView(view: View) {
   return <AdminDashboard />;
 }
 
-function redirectToLogin(event: MouseEvent<HTMLAnchorElement>) {
-  event.preventDefault();
-  window.location.hash = "login";
-  window.dispatchEvent(new HashChangeEvent("hashchange"));
-}
-
 function PublicNav() {
   const [open, setOpen] = useState(false);
   return (
@@ -450,7 +459,7 @@ function PublicNav() {
       <nav className={open ? "nav-links nav-links--open" : "nav-links"} aria-label="Main navigation">
         <a href="#top" onClick={(e) => { e.preventDefault(); setOpen(false); document.getElementById('top')?.scrollIntoView({ behavior: 'smooth' }); }}>Home</a>
         <a href="#requests" onClick={(e) => { e.preventDefault(); setOpen(false); document.getElementById('requests')?.scrollIntoView({ behavior: 'smooth' }); }}>Blood Requests</a>
-        <a href="#login" onClick={(event) => { setOpen(false); redirectToLogin(event); }}>Find Centers</a>
+        <a href="#donor-search" onClick={() => setOpen(false)}>Find Centers</a>
         <a href="#about" onClick={(e) => { e.preventDefault(); setOpen(false); document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }); }}>About Us</a>
         <a href="#contact" onClick={(e) => { e.preventDefault(); setOpen(false); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); }}>Contact</a>
       </nav>
@@ -463,6 +472,35 @@ function PublicNav() {
 }
 
 function PublicWebsite() {
+  const [quickBloodType, setQuickBloodType] = useState<BloodType | "">("");
+  const [quickCity, setQuickCity] = useState("");
+  const [quickLastDonation, setQuickLastDonation] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactMessage, setContactMessage] = useState("");
+  const [contactNotice, setContactNotice] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  function handleQuickSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    window.location.hash = buildHash("donor-search", {
+      blood: quickBloodType,
+      city: quickCity,
+      lastDonation: quickLastDonation,
+    });
+  }
+
+  function handleContactSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!contactName.trim() || !contactEmail.trim() || !contactMessage.trim()) {
+      setContactNotice({ type: "error", message: "Please fill name, email, and message before sending." });
+      return;
+    }
+    setContactNotice({ type: "success", message: "Message captured for backend contact API submission." });
+    setContactName("");
+    setContactEmail("");
+    setContactMessage("");
+  }
+
   return (
     <>
       <section className="hero-section" id="top">
@@ -533,11 +571,26 @@ function PublicWebsite() {
 
       <section className="section section-muted">
         <SectionIntro eyebrow="Quick Search" title="Find a suitable donation place faster" />
-        <form className="search-panel" onSubmit={(event) => event.preventDefault()}>
-          <SelectField label="Blood Type" options={["Select Blood Type", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]} />
-          <SelectField label="City" options={["Select City", "Gaza City", "Beit Lahia", "Khan Younis", "Rafah"]} />
-          <SelectField label="Last Donation" options={["Any date", "3 months or more", "6 months or more"]} />
-          <a className="button button-primary" href="#login" onClick={redirectToLogin}>Search</a>
+        <form className="search-panel" onSubmit={handleQuickSearch}>
+          <SelectField
+            label="Blood Type"
+            options={["Select Blood Type", ...bloodTypeOptions]}
+            value={quickBloodType}
+            onChange={(value) => setQuickBloodType(isBloodType(value) ? value : "")}
+          />
+          <SelectField
+            label="City"
+            options={["Select City", "Gaza City", "Beit Lahia", "Khan Younis", "Rafah"]}
+            value={quickCity}
+            onChange={setQuickCity}
+          />
+          <SelectField
+            label="Last Donation"
+            options={["Any date", "3 months or more", "6 months or more"]}
+            value={quickLastDonation}
+            onChange={setQuickLastDonation}
+          />
+          <button className="button button-primary" type="submit"><Icon name="search" />Search</button>
         </form>
       </section>
 
@@ -595,21 +648,22 @@ function PublicWebsite() {
           
           <div className="footer-contact-card" id="contact">
             <h4>Contact Us</h4>
-            <form className="contact-form" onSubmit={(e) => e.preventDefault()}>
+            <form className="contact-form" onSubmit={handleContactSubmit}>
               <div className="contact-inputs">
-                <input type="text" placeholder="Enter Name" />
-                <input type="email" placeholder="Enter Email" />
+                <input type="text" placeholder="Enter Name" value={contactName} onChange={(event) => setContactName((event.target as HTMLInputElement).value)} />
+                <input type="email" placeholder="Enter Email" value={contactEmail} onChange={(event) => setContactEmail((event.target as HTMLInputElement).value)} />
               </div>
-              <textarea placeholder="Enter your message"></textarea>
+              <textarea placeholder="Enter your message" value={contactMessage} onChange={(event) => setContactMessage((event.target as HTMLTextAreaElement).value)}></textarea>
+              {contactNotice ? <p className={`contact-feedback contact-feedback-${contactNotice.type}`}>{contactNotice.message}</p> : null}
               <button type="submit" className="button button-primary">Send</button>
             </form>
           </div>
         </div>
 
         <div className="footer-links">
-          <a href="#home">Home</a>
+          <a href="#top">Home</a>
           <a href="#about">About Us</a>
-          <a href="#donors">Find Donors</a>
+          <a href="#donor-search">Find Donors</a>
           <a href="#requests">Urgent Requests</a>
           <a href="#terms">Terms & Conditions</a>
           <a href="#privacy">Privacy Policy</a>
@@ -620,6 +674,45 @@ function PublicWebsite() {
         </div>
       </footer>
     </>
+  );
+}
+
+function LegalPage({ kind }: { kind: "terms" | "privacy" }) {
+  const isTerms = kind === "terms";
+  return (
+    <section className="legal-page" id={kind}>
+      <div className="legal-page-inner">
+        <span className="section-breadcrumb">{isTerms ? "Terms" : "Privacy"}</span>
+        <h1>{isTerms ? "Terms & Conditions" : "Privacy Policy"}</h1>
+        <p>
+          {isTerms
+            ? "SBMS is a healthcare coordination demo for donors, facilities, and blood request workflows. Users should submit accurate information and facilities should verify every medical action before taking operational decisions."
+            : "SBMS keeps donor, appointment, and blood request data scoped to healthcare coordination. Personal and medical data should be handled by the backend with role-based access, validation, and audit-friendly records."}
+        </p>
+        <div className="legal-card-grid">
+          <article>
+            <h2>{isTerms ? "Use of the platform" : "Data collected"}</h2>
+            <p>
+              {isTerms
+                ? "Donors can search facilities, request bookings, and respond to urgent needs. Facility admins can manage requests, inventory, slots, and appointments."
+                : "Frontend forms prepare profile details, blood type, city, appointment choices, request details, and optional contact messages for backend APIs."}
+            </p>
+          </article>
+          <article>
+            <h2>{isTerms ? "Medical verification" : "Backend protection"}</h2>
+            <p>
+              {isTerms
+                ? "Every donation, appointment, and request must be confirmed by authorized medical staff before real-world action."
+                : "The backend team should enforce authentication, authorization, server-side validation, and secure storage for all protected records."}
+            </p>
+          </article>
+        </div>
+        <div className="hero-actions">
+          <a className="button button-primary" href="#top">Back Home</a>
+          <a className="button button-light" href="#register">Create Account</a>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -932,7 +1025,12 @@ function DonorProfile() {
             {errors.full_name && <span className="field-error">{errors.full_name}</span>}
           </div>
           <div className="field-group">
-            <SelectField label="Blood Type" options={["Select type", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]} />
+            <SelectField
+              label="Blood Type"
+              options={["Select type", ...bloodTypeOptions]}
+              value={profile.blood_type}
+              onChange={(value) => updateField("blood_type", isBloodType(value) ? value : "")}
+            />
             {errors.blood_type && <span className="field-error">{errors.blood_type}</span>}
           </div>
         </div>
@@ -948,12 +1046,12 @@ function DonorProfile() {
         </div>
         <div className="form-two">
           <div className="field-group">
-            <SelectField label="Gender" options={["Select gender", "Male", "Female"]} />
+            <SelectField label="Gender" options={["Select gender", "Male", "Female"]} value={profile.gender} onChange={(value) => updateField("gender", value)} />
             {errors.gender && <span className="field-error">{errors.gender}</span>}
           </div>
           <Input label="Date of Birth" value={profile.birth_date} type="date" onChange={(e) => updateField('birth_date', (e.target as HTMLInputElement).value)} />
         </div>
-        <SelectField label="Notification Preference" options={["Select preference", "Email", "SMS", "Both"]} />
+        <SelectField label="Notification Preference" options={["Select preference", "Email", "SMS", "Both"]} value={profile.notification_preference} onChange={(value) => updateField("notification_preference", value)} />
         <div className="profile-actions">
           <button className={`button button-primary ${saving ? 'button-loading' : ''}`} type="button" onClick={handleSave} disabled={saving}>
             <Icon name="edit" />{saving ? 'Updating...' : 'Update Profile'}
@@ -1756,7 +1854,7 @@ function AdminProfile() {
             <Input label="Facility Name" value={profile.facility_name} onChange={(e) => updateField('facility_name', (e.target as HTMLInputElement).value)} />
             {errors.facility_name && <span className="field-error">{errors.facility_name}</span>}
           </div>
-          <SelectField label="Facility Type" options={["Hospital", "Blood Bank", "Clinic"]} />
+          <SelectField label="Facility Type" options={["Hospital", "Blood Bank", "Clinic"]} value={profile.facility_type} onChange={(value) => updateField("facility_type", value)} />
         </div>
         <div className="form-two">
           <div className="field-group">
@@ -1779,7 +1877,7 @@ function AdminProfile() {
             {errors.working_hours && <span className="field-error">{errors.working_hours}</span>}
           </div>
         </div>
-        <SelectField label="Operational Status" options={["Active (Accepting Donors)", "Inactive", "Maintenance"]} />
+        <SelectField label="Operational Status" options={["Active (Accepting Donors)", "Inactive", "Maintenance"]} value={profile.operational_status} onChange={(value) => updateField("operational_status", value)} />
         <p className="form-hint">Inactive facilities will not appear in donor searches.</p>
         <div className="profile-actions">
           <button className={`button button-primary ${saving ? 'button-loading' : ''}`} type="button" onClick={handleSave} disabled={saving}>
@@ -1801,6 +1899,11 @@ function ManageSlots() {
   ]);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [editSlot, setEditSlot] = useState<typeof slotList[number] | null>(null);
+  const [slotErrors, setSlotErrors] = useState<Record<string, string>>({});
+  const [newSlotDate, setNewSlotDate] = useState("");
+  const [newSlotStart, setNewSlotStart] = useState("");
+  const [newSlotEnd, setNewSlotEnd] = useState("");
+  const [newSlotCapacity, setNewSlotCapacity] = useState("");
   const [editDate, setEditDate] = useState("");
   const [editStart, setEditStart] = useState("");
   const [editEnd, setEditEnd] = useState("");
@@ -1811,10 +1914,43 @@ function ManageSlots() {
     setToast({ message: "Slot deleted successfully.", type: "success" });
   }
 
-  function addSlot() {
-    const newId = Date.now();
-    setSlotList((prev) => [...prev, { id: newId, date: "2026-06-05", startTime: "09:00 AM", endTime: "12:00 PM", capacity: 8, booked: 0 }]);
+  function resetNewSlotForm() {
+    setNewSlotDate("");
+    setNewSlotStart("");
+    setNewSlotEnd("");
+    setNewSlotCapacity("");
+    setSlotErrors({});
+  }
+
+  function closeNewSlotModal() {
     setShowModal(false);
+    resetNewSlotForm();
+  }
+
+  function addSlot() {
+    const capacity = Number.parseInt(newSlotCapacity, 10);
+    const errors: Record<string, string> = {};
+    if (!newSlotDate) errors.date = "Date is required.";
+    if (!newSlotStart) errors.start = "Start time is required.";
+    if (!newSlotEnd) errors.end = "End time is required.";
+    if (!newSlotCapacity || Number.isNaN(capacity) || capacity <= 0) errors.capacity = "Capacity must be greater than 0.";
+    if (newSlotStart && newSlotEnd && newSlotStart >= newSlotEnd) errors.end = "End time must be after start time.";
+    setSlotErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    const newId = Date.now();
+    setSlotList((prev) => [
+      ...prev,
+      {
+        id: newId,
+        date: newSlotDate,
+        startTime: formatTimeLabel(newSlotStart),
+        endTime: formatTimeLabel(newSlotEnd),
+        capacity,
+        booked: 0,
+      },
+    ]);
+    closeNewSlotModal();
     setToast({ message: "New slot created successfully!", type: "success" });
   }
 
@@ -1867,19 +2003,31 @@ function ManageSlots() {
         ])}
       />
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={closeNewSlotModal}>
           <div className="modal-card" onClick={(e: MouseEvent) => e.stopPropagation()}>
             <div className="modal-header">
               <Icon name="calendar" />
               <h3>Create New Donation Slot</h3>
-              <button className="modal-close" type="button" onClick={() => setShowModal(false)}>&times;</button>
+              <button className="modal-close" type="button" onClick={closeNewSlotModal}>&times;</button>
             </div>
-            <Input label="Date" type="date" />
+            <div className="field-group">
+              <Input label="Date" type="date" value={newSlotDate} onChange={(event) => { setNewSlotDate((event.target as HTMLInputElement).value); setSlotErrors((prev) => ({ ...prev, date: "" })); }} />
+              {slotErrors.date && <span className="field-error">{slotErrors.date}</span>}
+            </div>
             <div className="form-two">
-              <Input label="Start Time" type="time" />
-              <Input label="End Time" type="time" />
+              <div className="field-group">
+                <Input label="Start Time" type="time" value={newSlotStart} onChange={(event) => { setNewSlotStart((event.target as HTMLInputElement).value); setSlotErrors((prev) => ({ ...prev, start: "" })); }} />
+                {slotErrors.start && <span className="field-error">{slotErrors.start}</span>}
+              </div>
+              <div className="field-group">
+                <Input label="End Time" type="time" value={newSlotEnd} onChange={(event) => { setNewSlotEnd((event.target as HTMLInputElement).value); setSlotErrors((prev) => ({ ...prev, end: "" })); }} />
+                {slotErrors.end && <span className="field-error">{slotErrors.end}</span>}
+              </div>
             </div>
-            <Input label="Max Capacity" placeholder="8" type="number" />
+            <div className="field-group">
+              <Input label="Max Capacity" placeholder="8" type="number" value={newSlotCapacity} onChange={(event) => { setNewSlotCapacity((event.target as HTMLInputElement).value); setSlotErrors((prev) => ({ ...prev, capacity: "" })); }} />
+              {slotErrors.capacity && <span className="field-error">{slotErrors.capacity}</span>}
+            </div>
             <button className="button button-primary full-width" type="button" onClick={addSlot}>Save Slot</button>
           </div>
         </div>
@@ -2201,6 +2349,7 @@ function ManageRequests() {
   const [requestBloodType, setRequestBloodType] = useState<BloodType | "">("");
   const [requestUrgency, setRequestUrgency] = useState<ApiUrgencyLevel>("urgent");
   const [units, setUnits] = useState("");
+  const [requestNotes, setRequestNotes] = useState("");
   const [reqList, setReqList] = useState<RequestCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -2233,6 +2382,7 @@ function ManageRequests() {
     setRequestBloodType("");
     setRequestUrgency("urgent");
     setUnits("");
+    setRequestNotes("");
     setModalErrors({});
   }
 
@@ -2252,6 +2402,7 @@ function ManageRequests() {
       blood_type: selectedBloodType,
       required_units: requiredUnits,
       urgency_level: requestUrgency,
+      notes: requestNotes.trim() || undefined,
     };
 
     setIsSaving(true);
@@ -2401,7 +2552,7 @@ function ManageRequests() {
             </label>
             <div className="form-field">
               <label className="form-label">Notes (Optional)</label>
-              <textarea className="form-textarea" rows={3}></textarea>
+              <textarea className="form-textarea" rows={3} value={requestNotes} onChange={(event) => setRequestNotes((event.target as HTMLTextAreaElement).value)}></textarea>
             </div>
             <button className={`button button-primary full-width ${isSaving ? "button-loading" : ""}`} type="button" disabled={isSaving} onClick={() => void handlePublish()}>Publish Request</button>
           </div>
@@ -2753,11 +2904,12 @@ function Input({ label, ...props }: InputHTMLAttributes<HTMLInputElement> & { la
 }
 
 function SelectField({ label, options, value, onChange, name }: { label: string; options: readonly string[]; value?: string; onChange?: (value: string) => void; name?: string }) {
+  const emptyOptions = new Set(["Any time", "Any date", "Select type", "Select Blood Type", "Select City", "Select gender", "Select preference"]);
   return (
     <label className="field">
       <span>{label}</span>
       <select name={name} value={value} onChange={(event) => onChange?.((event.target as HTMLSelectElement).value)}>
-        {options.map((option) => <option value={option === "Any time" || option === "Select type" ? "" : option} key={option}>{option}</option>)}
+        {options.map((option) => <option value={emptyOptions.has(option) ? "" : option} key={option}>{option}</option>)}
       </select>
     </label>
   );

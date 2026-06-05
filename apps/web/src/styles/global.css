@@ -1201,6 +1201,25 @@ img {
   box-shadow: 0 4px 14px rgba(15, 119, 131, 0.3);
 }
 
+.contact-feedback {
+  align-self: stretch;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0;
+  padding: 10px 14px;
+}
+
+.contact-feedback-success {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.contact-feedback-error {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
 .footer-links {
   display: flex;
   justify-content: center;
@@ -1237,6 +1256,50 @@ img {
   opacity: 0.95;
 }
 
+.legal-page {
+  background: linear-gradient(180deg, #edf5f7 0%, #ffffff 100%);
+  min-height: calc(100vh - 84px);
+  padding: clamp(56px, 8vw, 96px) clamp(24px, 6vw, 90px);
+}
+
+.legal-page-inner {
+  margin: 0 auto;
+  max-width: 960px;
+}
+
+.legal-page h1 {
+  color: var(--text);
+  font-size: clamp(2.3rem, 4vw, 4rem);
+  line-height: 1;
+  margin: 10px 0 20px;
+}
+
+.legal-page p {
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.legal-card-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 28px 0;
+}
+
+.legal-card-grid article {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.legal-card-grid h2 {
+  font-size: 1.1rem;
+  margin: 0 0 10px;
+}
+
 @media (max-width: 860px) {
   .footer-top {
     grid-template-columns: 1fr;
@@ -1249,6 +1312,9 @@ img {
     gap: 24px;
     flex-direction: column;
     align-items: center;
+  }
+  .legal-card-grid {
+    grid-template-columns: 1fr;
   }
 }
 

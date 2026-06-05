@@ -2,8 +2,9 @@
 // Sprint 2: Mock data implementations ready for Sprint 3 API integration.
 // All functions follow the same pattern as requestService.ts
 
-const API_BASE_URL = "/api";
-const USE_REAL_API = false;
+const viteEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
+const API_BASE_URL = viteEnv?.VITE_API_BASE_URL ?? "/api";
+const USE_REAL_API = viteEnv?.VITE_USE_REAL_API === "true";
 
 // ── Types ───────────────────────────────────────────────────────
 

@@ -1,75 +1,117 @@
-# 🩸 Smart Blood Management System
+# Smart Blood Management System - MVP
 
-A centralized digital platform designed to bridge the gap between blood donors, hospitals, and blood banks in Gaza.
+This repository contains the MVP source and project documentation for the Smart Blood Management System (SBMS). The current database contract is defined in `سكيما.sql` and should be treated as the source of truth for table names, enum values, and field names.
 
----
+## MVP Goal
 
-## 📝 Project Overview
-This web application facilitates the connection between blood donors and medical facilities. It allows patients and donors to search for blood types by location and availability, while providing administrators with tools to manage donor profiles, blood inventory, and urgent requests efficiently.
+Build a simple web application that helps donors, admins, doctors, hospitals, and blood banks manage the core donation flow:
 
-## 🇵🇸 Justification (Why this project?)
-In **Gaza**, blood donation often relies on manual records or social media calls, leading to time wastage and shortages. Given the frequent displacement and high emergency rates, this digital solution is critical to:
-* Reduce reliance on traditional manual tracking.
-* Speed up the process of finding compatible donors.
-* Enhance the medical response during crises.
+- Register and authenticate users.
+- Search donors and blood banks by city and blood type.
+- Show blood bank details and available donation slots.
+- Book donation appointments.
+- Allow admins to manage appointments, blood inventory, and blood requests.
+- Keep mock frontend data aligned with the SQL schema before backend integration.
 
-## 🎯 Problem Statement
-Hospitals and blood banks face challenges in:
-1.  Locating specific blood types during emergencies.
-2.  Tracking real-time inventory and donor eligibility.
-3.  Managing expiration dates and communication with donors.
+## Schema v2 Source of Truth
 
----
+The schema file creates these enum types:
 
-## 👥 Team Members
-We are a dedicated team of engineers working on this humanitarian initiative:
-| Name | ID | Role |
-| :--- | :--- | :--- |
-| **Ghena Mousa** | 220221104 | Project Owner |
-| **Nourhan Elmassry** | 220220164 | Frontend Developer & Scram Master|
-| **Aya Murtaja** | 220221882 | UI/UX Designer |
-| **Deema Redwan** | 220220873 | Frontend Developer |
-| **Sja Miqdad** | 220232309 | Database Administrator |
-| **Hadeel Abu Kmail** | 220221693 | Backend Developer |
-| **Majeda Skaik** | 220220506 | Backend Developer |
-| **Tasneem Alqirnawi** | 220221010 | Backend Developer |
-| **Sara Rayyan** | 220232116 | Database Specialist |
+| Enum | Values |
+| --- | --- |
+| `blood_type_enum` | `A+`, `A-`, `B+`, `B-`, `AB+`, `AB-`, `O+`, `O-` |
+| `role_enum` | `donor`, `admin`, `doctor` |
+| `gender_enum` | `male`, `female` |
 
----
+## Database Tables
 
-## ✨ Key Features
-### 👤 Donor Interface
-* **Search & Browse:** Find blood banks by location and blood type.
-* **Appointment Management:** Book, view, or reschedule donations.
-* **Notifications:** Receive emergency alerts and reminders.
+| Table | Key fields |
+| --- | --- |
+| `users` | `id`, `full_name`, `email`, `password_hash`, `phone`, `role`, `blood_type`, `gender`, `birth_date`, `city`, `is_eligible`, `created_at`, `updated_at` |
+| `blood_banks` | `id`, `name`, `city`, `address`, `latitude`, `longitude`, `contact_number`, `email`, `created_at`, `updated_at` |
+| `donation_slots` | `id`, `bank_id`, `slot_date`, `start_time`, `end_time`, `max_capacity` |
+| `appointments` | `id`, `user_id`, `slot_id`, `appointment_status`, `notes`, `created_at`, `updated_at` |
+| `blood_inventory` | `id`, `bank_id`, `appointment_id`, `blood_type`, `quantity_units`, `expiration_date`, `last_updated` |
+| `blood_requests` | `id`, `bank_id`, `patient_name`, `blood_type`, `required_units`, `urgency_level`, `status`, `request_date` |
+| `blood_disbursements` | `id`, `request_id`, `inventory_id`, `units_used`, `dispatched_at` |
+| `notifications` | `id`, `user_id`, `title`, `message`, `type`, `is_read`, `created_at` |
 
-### 🏥 Admin & Doctor Dashboard
-* **Inventory Management:** Real-time tracking of blood units and expiration.
-* **Request Handling:** Manage urgent blood requests and appointment slots.
-* **User Management:** Review facility registrations and monitor system flow.
+## Main Relationships
 
-### 🌐 General Features
-* **Multi-language Support:** Full interface in Arabic and English.
-* **Notification System:** Automated updates via In-app alerts, Email, and SMS.
+- `donation_slots.bank_id` references `blood_banks.id`.
+- `appointments.user_id` references `users.id`.
+- `appointments.slot_id` references `donation_slots.id`.
+- `blood_inventory.bank_id` references `blood_banks.id`.
+- `blood_inventory.appointment_id` references `appointments.id`.
+- `blood_requests.bank_id` references `blood_banks.id`.
+- `blood_disbursements.request_id` references `blood_requests.id`.
+- `blood_disbursements.inventory_id` references `blood_inventory.id`.
+- `notifications.user_id` references `users.id`.
 
----
+## Frontend Schema Alignment
 
-## 🛠️ Technologies & Tools
-* **Frontend:** React.js
-* **Backend:** Node.js / Express
-* **Database:** PostgreSQL / MySQL
-* **Authentication:** JWT (JSON Web Tokens)
-* **Deployment:** Vercel / AWS
+The current frontend mock data uses schema-aligned names:
 
----
+- Blood requests use `bank_id`, `patient_name`, `blood_type`, `required_units`, `urgency_level`, `status`, and `request_date`.
+- Blood banks use `id`, `name`, `city`, `address`, and `contact_number`.
+- Inventory mock rows use `bank_id`, `blood_type`, `quantity_units`, and `expiration_date`.
+- Appointment mock rows use `user_id`, `slot_id`, and `appointment_status`.
 
-## 💡 Expected Impact
-* Reducing hospital and blood bank overcrowding.
-* Minimizing missed donation appointments.
-* Saving critical time for patients and medical staff.
-* Facilitating healthcare access for displaced individuals.
+## Recommended API Shape
 
----
+The backend API can use these route groups while keeping request and response bodies aligned with the SQL schema:
 
-## 🏁 Conclusion
-This project is more than just a technical solution; it is a **humanitarian initiative** designed to address life-saving challenges in unstable environments. We aim to ensure that no patient has to wait for a compatible donor when time is of the essence.
+### Auth and Users
+
+- `POST /api/auth/register/donor`
+- `POST /api/auth/register/admin`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/me`
+- `PATCH /api/me`
+
+### Blood Banks and Donation Slots
+
+- `GET /api/blood-banks/search`
+- `GET /api/blood-banks/:id`
+- `GET /api/donation-slots`
+- `POST /api/donation-slots`
+- `PATCH /api/donation-slots/:id`
+
+### Appointments
+
+- `POST /api/appointments`
+- `GET /api/appointments/my`
+- `GET /api/appointments/bank/:bankId`
+- `PATCH /api/appointments/:id/status`
+
+### Inventory and Requests
+
+- `GET /api/inventory`
+- `POST /api/inventory`
+- `PATCH /api/inventory/:id`
+- `GET /api/blood-requests`
+- `POST /api/blood-requests`
+- `POST /api/blood-disbursements`
+- `GET /api/notifications`
+
+## Development Stack
+
+- Frontend: React + TypeScript + Vite
+- Backend target: Node.js + Express + TypeScript
+- Database: PostgreSQL
+- ORM target: Prisma
+- Auth target: JWT
+
+## Frontend App
+
+```bash
+cd apps/web
+npm install
+npm run build
+npm run dev
+```
+
+## Notes
+
+Compiled files such as PDFs, LaTeX auxiliary files, and Vite `dist` output may need regeneration after source documentation or frontend changes.

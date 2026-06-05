@@ -1,8 +1,41 @@
 import { mockDonors } from "../data/mockDonors";
 import type { DonorProfile, DonorSearchFilters, NewDonorBloodRequest } from "../types/request";
 
+const viteEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
+const API_BASE_URL = viteEnv?.VITE_API_BASE_URL ?? "/api";
+const USE_REAL_API = viteEnv?.VITE_USE_REAL_API === "true";
+
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    const message =
+      typeof body === "object" && body !== null && "message" in body
+        ? String((body as { message: string }).message)
+        : `Request failed with status ${response.status}`;
+    throw new Error(message);
+  }
+
+  return response.json() as Promise<T>;
+}
+
 export async function fetchDonors(filters: DonorSearchFilters): Promise<DonorProfile[]> {
-  // TODO: Replace mock response with GET /api/donors/search in Sprint 2.
+  if (USE_REAL_API) {
+    const params = new URLSearchParams();
+    if (filters.blood_type) params.set("blood_type", filters.blood_type);
+    if (filters.city.trim()) params.set("city", filters.city.trim());
+    if (filters.last_donation_within_months !== "any") {
+      params.set("last_donation_within_months", filters.last_donation_within_months);
+    }
+
+    const query = params.toString();
+    const response = await fetch(`${API_BASE_URL}/donors/search${query ? `?${query}` : ""}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    return handleResponse<DonorProfile[]>(response);
+  }
+
   return new Promise((resolve) => {
     window.setTimeout(() => {
       resolve(
@@ -21,7 +54,22 @@ export async function fetchDonors(filters: DonorSearchFilters): Promise<DonorPro
 }
 
 export async function createDonorBloodRequest(request: NewDonorBloodRequest): Promise<NewDonorBloodRequest> {
-  // TODO: Replace mock response with POST /api/donor-requests or the backend-approved endpoint.
+  if (USE_REAL_API) {
+    const response = await fetch(`${API_BASE_URL}/donor-requests`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...request,
+        patient_name: request.patient_name.trim(),
+        city: request.city.trim(),
+        hospital_name: request.hospital_name.trim(),
+        notes: request.notes?.trim() || undefined,
+      }),
+    });
+
+    return handleResponse<NewDonorBloodRequest>(response);
+  }
+
   return new Promise((resolve) => {
     window.setTimeout(() => resolve(request), 250);
   });
