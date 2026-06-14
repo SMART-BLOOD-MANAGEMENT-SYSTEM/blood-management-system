@@ -605,7 +605,7 @@ function PublicWebsite() {
         <span className="section-breadcrumb">Requests</span>
         <div className="section-header-row">
           <SectionIntro eyebrow="Urgent Requests" title="Be The Hero Someone Is Waiting For" />
-          <a className="button button-primary" href="#register">Add New Request</a>
+          <a className="button button-danger" href="#register">Add New Request</a>
         </div>
         <div className="request-grid-legacy">
           {urgentRequests.map((request, index) => (
