@@ -191,6 +191,8 @@ function PublicNav() {
 function PublicWebsite() {
   const [requests, setRequests] = useState<any[]>([]);
   const [banks, setBanks] = useState<any[]>([]);
+  const [searchBloodType, setSearchBloodType] = useState("");
+  const [searchCity, setSearchCity] = useState("");
 
   useEffect(() => {
     Promise.all([
@@ -207,6 +209,23 @@ function PublicWebsite() {
   function getBankName(bankId: number) {
     const bank = banks.find((b: any) => b.id === bankId);
     return bank ? bank.name : "—";
+  }
+
+  function handleSearch() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.hash = "#login";
+    } else {
+      const params = new URLSearchParams();
+      if (searchBloodType && searchBloodType !== "Select Blood Type") {
+        params.set("blood_type", searchBloodType);
+      }
+      if (searchCity && searchCity !== "Select City") {
+        params.set("city", searchCity);
+      }
+      window.location.hash = `#donor-search`;
+      localStorage.setItem("searchParams", JSON.stringify({ bloodType: searchBloodType, city: searchCity }));
+    }
   }
 
   const urgentReqs = requests.filter((r) => r.urgency_level === "urgent");
@@ -282,11 +301,22 @@ function PublicWebsite() {
 
       <section className="section section-muted">
         <SectionIntro eyebrow="Quick Search" title="Find a suitable donation place faster" />
-        <form className="search-panel" onSubmit={(event) => event.preventDefault()}>
-          <SelectField label="Blood Type" options={["Select Blood Type", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]} />
-          <SelectField label="City" options={["Select City", "Gaza City", "Beit Lahia", "Khan Younis", "Rafah"]} />
-          <SelectField label="Last Donation" options={["Any date", "3 months or more", "6 months or more"]} />
-          <a className="button button-primary" href="#login" onClick={redirectToLogin}>Search</a>
+        <form className="search-panel" onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
+          <SelectField
+            label="Blood Type"
+            options={["Select Blood Type", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]}
+            onChange={(e) => setSearchBloodType(e.target.value)}
+          />
+          <SelectField
+            label="City"
+            options={["Select City", "Gaza City", "Beit Lahia", "Khan Younis", "Rafah"]}
+            onChange={(e) => setSearchCity(e.target.value)}
+          />
+          <SelectField
+            label="Last Donation"
+            options={["Any date", "3 months or more", "6 months or more"]}
+          />
+          <button className="button button-primary" type="submit">Search</button>
         </form>
       </section>
 
@@ -408,7 +438,14 @@ function Login() {
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.role);
         localStorage.setItem("user", JSON.stringify(data.user));
-        window.location.hash = data.role === "admin" ? "admin" : "donor";
+       const searchParams = localStorage.getItem("searchParams");
+if (data.role === "admin") {
+  window.location.hash = "admin";
+} else if (searchParams) {
+  window.location.hash = "donor-search";
+} else {
+  window.location.hash = "donor";
+}
         window.dispatchEvent(new HashChangeEvent("hashchange"));
       } else {
         alert(data.message || "Login failed");
@@ -891,13 +928,43 @@ function DonorProfile() {
   );
 }function SearchFacilities() {
   const [facilities, setFacilities] = useState<any[]>([]);
+  const [filtered, setFiltered] = useState<any[]>([]);
+  const [searchText, setSearchText] = useState("");
+  const [bloodType, setBloodType] = useState("");
 
   useEffect(() => {
+    // استقبل بيانات البحث من الهوم
+    const savedParams = localStorage.getItem("searchParams");
+    if (savedParams) {
+      const params = JSON.parse(savedParams);
+      if (params.bloodType && params.bloodType !== "Select Blood Type") {
+        setBloodType(params.bloodType);
+      }
+      if (params.city && params.city !== "Select City") {
+        setSearchText(params.city);
+      }
+      localStorage.removeItem("searchParams");
+    }
+
     fetch("/api/blood-banks")
       .then((res) => res.json())
-      .then((data) => setFacilities(data))
+      .then((data) => {
+        setFacilities(data);
+        setFiltered(data);
+      })
       .catch(() => console.error("Failed to fetch facilities"));
   }, []);
+
+  useEffect(() => {
+    let results = facilities;
+    if (searchText) {
+      results = results.filter((f: any) =>
+        f.city?.toLowerCase().includes(searchText.toLowerCase()) ||
+       f.city?.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+    setFiltered(results);
+  }, [searchText, bloodType, facilities]);
 
   return (
     <>
@@ -905,37 +972,48 @@ function DonorProfile() {
       <div className="search-panel compact">
         <div className="search-input-wrap">
           <svg className="search-input-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m16 16 5 5" /></svg>
-          <input type="text" placeholder="Search by city..." />
+          <input
+            type="text"
+            placeholder="Search by city or name..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
         </div>
-        <label className="search-select-wrap">
-          <select defaultValue="">
-            <option value="">Any Blood Type</option>
-            <option value="A+">A+</option>
-            <option value="A-">A-</option>
-            <option value="B+">B+</option>
-            <option value="B-">B-</option>
-            <option value="AB+">AB+</option>
-            <option value="AB-">AB-</option>
-            <option value="O+">O+</option>
-            <option value="O-">O-</option>
-          </select>
-        </label>
-        <button className="button button-primary search-bar-btn" type="button"><Icon name="search" />Search</button>
+        
+        <button 
+  className="button button-primary search-bar-btn" 
+  type="button"
+  onClick={() => {
+    let results = facilities;
+    if (searchText) {
+      results = results.filter((f: any) =>
+        f.city?.toLowerCase().includes(searchText.toLowerCase()) ||
+       f.city?.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+    if (bloodType) {
+      results = results.filter((f: any) => f.blood_type === bloodType);
+    }
+    setFiltered(results);
+  }}
+>
+          <Icon name="search" />Search
+        </button>
       </div>
       <div className="card-grid">
-        {facilities.length === 0 ? (
+        {filtered.length === 0 ? (
           <EmptyState icon="building" title="No facilities found." />
         ) : (
-          facilities.map((facility: any) => (
+          filtered.map((facility: any) => (
             <article className="facility-card" key={facility.id}>
               <div className="facility-type-badge">
                 <Icon name="building" />
-                <span>Blood Bank</span>
+                <span>{facility.facility_type || "Blood Bank"}</span>
               </div>
               <h3>{facility.name}</h3>
               <div className="facility-meta">
                 <p><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>{facility.city}</p>
-                <p><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>{facility.contact_number || facility.phone}</p>
+                <p><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>{facility.phone}</p>
               </div>
               <div className="facility-actions">
                 <a className="button button-light full-width" href="#facility-details">Details</a>
@@ -948,7 +1026,6 @@ function DonorProfile() {
     </>
   );
 }
-
 function FacilityDetails() {
   const [bank, setBank] = useState<any>(null);
   const [slots, setSlots] = useState<any[]>([]);
@@ -1242,8 +1319,25 @@ function MyAppointments() {
 function DonorUrgentRequests() {
   const [requests, setRequests] = useState<any[]>([]);
   const [banks, setBanks] = useState<any[]>([]);
+  const [bloodType, setBloodType] = useState("");
+
+  const compatibility: Record<string, string[]> = {
+    "O-":  ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
+    "O+":  ["O+", "A+", "B+", "AB+"],
+    "A-":  ["A-", "A+", "AB-", "AB+"],
+    "A+":  ["A+", "AB+"],
+    "B-":  ["B-", "B+", "AB-", "AB+"],
+    "B+":  ["B+", "AB+"],
+    "AB-": ["AB-", "AB+"],
+    "AB+": ["AB+"],
+  };
 
   useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user.blood_type) {
+      setBloodType(user.blood_type);
+    }
+
     Promise.all([
       fetch("/api/blood-requests").then((res) => res.json()),
       fetch("/api/blood-banks").then((res) => res.json()),
@@ -1260,14 +1354,33 @@ function DonorUrgentRequests() {
     return bank ? bank.name : "—";
   }
 
+  const filtered = bloodType && compatibility[bloodType]
+    ? requests.filter((r: any) => compatibility[bloodType].includes(r.blood_type))
+    : requests;
+
   return (
     <>
       <PageTitle title="Urgent Requests" subtitle="Critical blood shortages that match your blood type." />
-      {requests.length === 0 ? (
-        <EmptyState icon="warning" title="No urgent requests." />
+      <div className="search-panel compact" style={{ marginBottom: "24px" }}>
+        <label className="search-select-wrap">
+          <select value={bloodType} onChange={(e) => setBloodType(e.target.value)}>
+            <option value="">Select your blood type to see who you can help</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
+        </label>
+      </div>
+      {filtered.length === 0 ? (
+        <EmptyState icon="warning" title="No urgent requests match your blood type." />
       ) : (
         <div className="request-grid-legacy dashboard-requests">
-          {requests.map((request: any, index: number) => (
+          {filtered.map((request: any, index: number) => (
             <RequestCard
               key={request.id}
               request={{
@@ -1283,7 +1396,8 @@ function DonorUrgentRequests() {
       )}
     </>
   );
-}function AdminDashboard() {
+}
+function AdminDashboard() {
   const [stats, setStats] = useState({
     pendingAppointments: 0,
     acceptedAppointments: 0,
