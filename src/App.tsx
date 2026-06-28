@@ -1016,7 +1016,13 @@ function DonorProfile() {
                 <p><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>{facility.phone}</p>
               </div>
               <div className="facility-actions">
-                <a className="button button-light full-width" href="#facility-details">Details</a>
+                <a 
+  className="button button-light full-width" 
+  href="#facility-details"
+  onClick={() => localStorage.setItem("selectedBankId", facility.id)}
+>
+  Details
+</a>
                 <a className="button button-primary full-width" href="#book-appointment">Book <Icon name="chevron" /></a>
               </div>
             </article>
@@ -1034,11 +1040,23 @@ function FacilityDetails() {
   useEffect(() => {
     fetch("/api/blood-banks")
       .then((res) => res.json())
-      .then((data) => setBank(data[0] || null));
+      .then((data) => {
+        const bankId = localStorage.getItem("selectedBankId");
+        const selected = bankId 
+          ? data.find((b: any) => b.id === parseInt(bankId)) || data[0]
+          : data[0];
+        setBank(selected || null);
+      });
 
     fetch("/api/slots")
       .then((res) => res.json())
-      .then((data) => setSlots(data));
+      .then((data) => {
+        const bankId = localStorage.getItem("selectedBankId");
+        const filtered = bankId 
+          ? data.filter((s: any) => s.bank_id === parseInt(bankId))
+          : data;
+        setSlots(filtered);
+      });
 
     fetch("/api/blood-requests")
       .then((res) => res.json())
@@ -1642,7 +1660,6 @@ useEffect(() => {
     </>
   );
 }
-
 function ManageSlots() {
   const [showModal, setShowModal] = useState(false);
   const [slots, setSlots] = useState<any[]>([]);
@@ -1669,9 +1686,13 @@ function ManageSlots() {
   async function handleCreateSlot() {
     setLoading(true);
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch("/api/slots", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
         body: JSON.stringify({
           bank_id: 1,
           slot_date: date,
@@ -1908,16 +1929,24 @@ function ManageInventory() {
   }
 
   async function handleAddStock() {
+    if (!expirationDate) {
+      alert("Please enter expiration date");
+      return;
+    }
     setLoading(true);
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch("/api/inventory", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
         body: JSON.stringify({
-  blood_type: bloodType,
-  units: parseInt(quantity),
-  expiration_date: expirationDate,
-}),
+          blood_type: bloodType,
+          units: parseInt(quantity),
+          expiration_date: expirationDate,
+        }),
       });
       const data = await response.json();
       if (response.ok) {
@@ -1959,8 +1988,8 @@ function ManageInventory() {
                 {inventory.map((item: any) => (
                   <tr key={item.id}>
                     <td>{item.blood_type}</td>
-<td>{item.units}</td>
-<td>{item.expiration_date}</td>
+                    <td>{item.units}</td>
+                    <td>{item.expiration_date || "N/A"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1978,7 +2007,7 @@ function ManageInventory() {
             </div>
             <SelectField label="Blood Type" options={["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]} onChange={(e) => setBloodType(e.target.value)} />
             <Input label="Quantity (Units)" placeholder="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-            <Input label="Expiration Date" type="date" value={expirationDate} onChange={(e) => setExpirationDate(e.target.value)} />
+            <Input label="Expiration Date *" type="date" value={expirationDate} onChange={(e) => setExpirationDate(e.target.value)} />
             <button className="button button-primary full-width" type="button" onClick={handleAddStock} disabled={loading}>
               {loading ? "Saving..." : "Save"}
             </button>
