@@ -37,31 +37,31 @@ The system is built on a standard **Three-Tier Architecture** to keep the interf
 
 ## ♦️ Scrum Team Roles & Responsibilities
 
-To mimic a real-world software engineering environment, our team operated under a structured **Scrum Framework**, with each of the 10 members owning a vital part of the development lifecycle[cite: 1]:
+To mimic a real-world software engineering environment, our team operated under a structured **Scrum Framework**, with each of the 10 members owning a vital part of the development lifecycle:
 
-* 🔴 **Person 1  Scrum Master / Analyst:** Facilitated Sprint planning, managed the Jira board, and translated the Gaza MVP clinical needs into technical user stories[cite: 1].
-* 🔴 **Person 2  UI/UX Designer:** Crafted the system's visual identity, wireframes, and responsive user journeys for both desktop and mobile users[cite: 1].
-* 🔴 **Person 3  Frontend Public Pages:** Developed the landing experience, facility search filters, and static information portals using React.js[cite: 1].
-* 🔴 **Person 4  Frontend Donor Flow:** Built the interactive donor dashboard, onboarding forms, and the step-by-step appointment booking interface[cite: 1].
-* 🔴 **Person 5  Frontend Requests & Admin UI:** Engineered the complex dashboard views for facility admins to manage slots, view inventory, and issue urgent blood alerts[cite: 1].
-* 🔴 **Person 6  Backend Auth & Users:** Implemented the Node.js authentication middleware, JWT token handling, and role-based route guarding[cite: 1].
-* 🔴 **Person 7  Backend Blood Banks & Appointments:** Developed the core business logic and API endpoints for managing facility timetables and booking status mutations[cite: 1].
-* 🔴 **Person 8  Backend DB, Inventory & Requests:** Designed the PostgreSQL schemas via Prisma, handled blood unit ledger logic, and coded the urgent bulletin dispatch system[cite: 1].
-* 🔴 **Person 9  QA / Testing / Deployment:** Created the Postman API testing suites, documented manual test matrices, and managed version control tagging and final build staging[cite: 1].
-* 🔴 **Person 10  Project Owner / Technical Supervisor:** Maintained the overall system architecture integrity, supervised integration milestones, and aligned the project deliverables with engineering standards[cite: 1].
+* 🔴 **Person 1 ( Scrum Master / Analyst ):** Facilitated Sprint planning, managed the Jira board, and translated the Gaza MVP clinical needs into technical user stories.
+* 🔴 **Person 2 ( UI/UX Designer ):** Crafted the system's visual identity, wireframes, and responsive user journeys for both desktop and mobile users.
+* 🔴 **Person 3 ( Frontend Public Pages ):** Developed the landing experience, facility search filters, and static information portals using React.js.
+* 🔴 **Person 4 ( Frontend Donor Flow ):** Built the interactive donor dashboard, onboarding forms, and the step-by-step appointment booking interface.
+* 🔴 **Person 5 ( Frontend Requests & Admin UI ):** Engineered the complex dashboard views for facility admins to manage slots, view inventory, and issue urgent blood alerts.
+* 🔴 **Person 6 ( Backend Auth & Users ):** Implemented the Node.js authentication middleware, JWT token handling, and role-based route guarding.
+* 🔴 **Person 7 ( Backend Blood Banks & Appointments ):** Developed the core business logic and API endpoints for managing facility timetables and booking status mutations.
+* 🔴 **Person 8 ( Backend DB, Inventory & Requests ):** Designed the PostgreSQL schemas via Prisma, handled blood unit ledger logic, and coded the urgent bulletin dispatch system.
+* 🔴 **Person 9 ( QA / Testing / Deployment ):** Created the Postman API testing suites, documented manual test matrices, and managed version control tagging and final build staging.
+* 🔴 **Person 10 ( Project Owner / Technical Supervisor ):** Maintained the overall system architecture integrity, supervised integration milestones, and aligned the project deliverables with engineering standards.
 
 ---
 
 ## ♦️ Agile Development & Delivery Workflow
 
-Our project was built incrementally across a structured **3-Sprint Plan** tracked via **Jira** workflows (Epics ➔ Stories ➔ Sub-tasks)[cite: 1]:
+Our project was built incrementally across a structured **3-Sprint Plan** tracked via **Jira** workflows (Epics ➔ Stories ➔ Sub-tasks):
 
-* ▪️ **Sprint 1 (Foundation):** Designed the data schema, created the unified API contract, and coded the static public layout structures[cite: 1].
-* ▪️ **Sprint 2 (Core Development):** Built individual donor/admin screens, linked dynamic forms, and finalized core backend REST endpoints[cite: 1].
-* ▪️ **Sprint 3 (Integration & QA):** Connected the frontend services to the backend API, handled token persistence, ran regression tests, and polished responsive UI breakdowns[cite: 1].
+* ▪️ **Sprint 1 (Foundation):** Designed the data schema, created the unified API contract, and coded the static public layout structures.
+* ▪️ **Sprint 2 (Core Development):** Built individual donor/admin screens, linked dynamic forms, and finalized core backend REST endpoints.
+* ▪️ **Sprint 3 (Integration & QA):** Connected the frontend services to the backend API, handled token persistence, ran regression tests, and polished responsive UI breakdowns.
 
 ### ⚫ Quality Assurance (QA) & Integration Focus
-Instead of rushing code to production, our workflow prioritized rigorous verification. The backend was fully mapped out and validated using **Postman API collections** alongside strict manual UI test matrices (`TC-AUTH`, `TC-BKG`, `TC-INV`) to ensure edge cases (such as unauthorized page routing) were cleanly caught, tracked via Jira, and mitigated before the final release[cite: 1].
+Instead of rushing code to production, our workflow prioritized rigorous verification. The backend was fully mapped out and validated using **Postman API collections** alongside strict manual UI test matrices (`TC-AUTH`, `TC-BKG`, `TC-INV`) to ensure edge cases (such as unauthorized page routing) were cleanly caught, tracked via Jira, and mitigated before the final release.
 
 ---
 
