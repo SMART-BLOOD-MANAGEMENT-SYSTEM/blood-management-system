@@ -98,6 +98,9 @@ return response()->json([
     public function updateStatus(Request $request, $id)
     {
         $request->headers->set('Accept', 'application/json');
+        if (!$request->user() || $request->user()->role !== 'admin') {
+        return response()->json(['message' => 'Unauthorized. Admin access only.'], 403);
+    }
 
         $appointment = Appointment::findOrFail($id);
         $appointment->status = $request->status;

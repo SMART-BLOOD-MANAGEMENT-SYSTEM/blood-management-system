@@ -18,6 +18,10 @@ class BloodRequestController extends Controller
     {
         $request->headers->set('Accept', 'application/json');
 
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized. Admin access only.'], 403);
+        }
+
         $request->validate([
             'bank_id' => 'required|exists:blood_banks,id',
             'blood_type' => 'required|string',
@@ -43,6 +47,10 @@ class BloodRequestController extends Controller
     {
         $request->headers->set('Accept', 'application/json');
 
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized. Admin access only.'], 403);
+        }
+
         $bloodRequest = BloodRequest::findOrFail($id);
         $bloodRequest->update($request->only([
             'blood_type',
@@ -58,20 +66,22 @@ class BloodRequestController extends Controller
     {
         $request->headers->set('Accept', 'application/json');
 
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized. Admin access only.'], 403);
+        }
+
         $request->validate([
             'units_given' => 'required|integer|min:1',
         ]);
 
         $bloodRequest = BloodRequest::findOrFail($id);
 
-        // تحقق إذا الوحدات المعطاة أكثر من المطلوبة
         if ($request->units_given > $bloodRequest->units_needed) {
             return response()->json([
                 'message' => 'Cannot give more than needed. Units needed: ' . $bloodRequest->units_needed
             ], 422);
         }
 
-        // تحقق إذا في مخزون كافي
         $inventory = BloodInventory::where('blood_type', $bloodRequest->blood_type)
             ->where('blood_bank_id', $bloodRequest->bank_id)
             ->orderBy('expiration_date', 'asc')
@@ -85,7 +95,6 @@ class BloodRequestController extends Controller
             ], 422);
         }
 
-        // ننقص من المخزون
         $unitsToDeduct = $request->units_given;
         foreach ($inventory as $item) {
             if ($unitsToDeduct <= 0) break;
@@ -100,10 +109,8 @@ class BloodRequestController extends Controller
             }
         }
 
-        // ننقص من الطلب
         $bloodRequest->units_needed -= $request->units_given;
 
-        // لو الطلب اكتمل
         if ($bloodRequest->units_needed <= 0) {
             $bloodRequest->units_needed = 0;
             $bloodRequest->status = 'fulfilled';
@@ -114,8 +121,12 @@ class BloodRequestController extends Controller
         return response()->json($bloodRequest);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized. Admin access only.'], 403);
+        }
+
         $bloodRequest = BloodRequest::findOrFail($id);
         $bloodRequest->delete();
         return response()->json(['message' => 'Deleted successfully']);

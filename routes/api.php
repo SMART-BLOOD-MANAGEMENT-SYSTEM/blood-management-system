@@ -22,23 +22,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);
-    Route::post('/donor-requests', [BloodRequestController::class, 'store']);
-    Route::post('/appointments', [AppointmentController::class, 'store']);
-    Route::get('/my-appointments', [AppointmentController::class, 'myAppointments']);
-    Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-});
-
-Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/blood-banks', [BloodBankController::class, 'store']);
     Route::put('/blood-banks/{id}', [BloodBankController::class, 'update']);
     Route::post('/blood-requests', [BloodRequestController::class, 'store']);
+    Route::post('/donor-requests', [BloodRequestController::class, 'store']);
     Route::put('/blood-requests/{id}', [BloodRequestController::class, 'update']);
     Route::delete('/blood-requests/{id}', [BloodRequestController::class, 'destroy']);
     Route::post('/blood-requests/{id}/fulfill', [BloodRequestController::class, 'fulfill']);
     Route::post('/inventory', [BloodBankController::class, 'addStock']);
+    Route::post('/appointments', [AppointmentController::class, 'store']);
     Route::put('/appointments/{id}', [AppointmentController::class, 'updateStatus']);
+    Route::get('/my-appointments', [AppointmentController::class, 'myAppointments']);
     Route::post('/slots', [SlotController::class, 'store']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::get('/admin/appointments', [DonorController::class, 'appointments']);
     Route::get('/admin/inventory', [BloodBankController::class, 'inventory']);
     Route::get('/admin/requests', [BloodRequestController::class, 'adminIndex']);

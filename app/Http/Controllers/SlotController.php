@@ -17,6 +17,10 @@ class SlotController extends Controller
     {
         $request->headers->set('Accept', 'application/json');
 
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized. Admin access only.'], 403);
+        }
+
         $request->validate([
             'bank_id' => 'required|exists:blood_banks,id',
             'slot_date' => 'required|date',

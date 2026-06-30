@@ -14,8 +14,12 @@ class BloodBankController extends Controller
         return response()->json($banks);
     }
 
-    public function indexAll()
+    public function indexAll(Request $request)
     {
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized. Admin access only.'], 403);
+        }
+
         $banks = BloodBank::all();
         return response()->json($banks);
     }
@@ -23,6 +27,10 @@ class BloodBankController extends Controller
     public function store(Request $request)
     {
         $request->headers->set('Accept', 'application/json');
+
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized. Admin access only.'], 403);
+        }
 
         $request->validate([
             'name' => 'required|string',
@@ -51,6 +59,10 @@ class BloodBankController extends Controller
     {
         $request->headers->set('Accept', 'application/json');
 
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized. Admin access only.'], 403);
+        }
+
         $bank = BloodBank::findOrFail($id);
         $bank->update($request->only([
             'name', 'city', 'phone', 'address',
@@ -68,6 +80,10 @@ class BloodBankController extends Controller
     public function addStock(Request $request)
     {
         $request->headers->set('Accept', 'application/json');
+
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized. Admin access only.'], 403);
+        }
 
         $request->validate([
             'blood_type' => 'required|string',
