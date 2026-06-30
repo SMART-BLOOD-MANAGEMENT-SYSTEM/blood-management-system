@@ -2043,11 +2043,15 @@ function ManageRequests() {
       console.error("Failed to fetch requests");
     }
   }
-
-  async function handleCreateRequest() {
+async function handleCreateRequest() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
+      
+      const banksRes = await fetch("/api/blood-banks");
+      const banks = await banksRes.json();
+      const bankId = banks[0]?.id || 1;
+
       const response = await fetch("/api/blood-requests", {
         method: "POST",
         headers: {
@@ -2055,7 +2059,7 @@ function ManageRequests() {
           "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
-          bank_id: 1,
+          bank_id: bankId,
           blood_type: bloodType,
           units_needed: parseInt(units),
           urgency_level: urgency,
@@ -2106,9 +2110,7 @@ function ManageRequests() {
     } finally {
       setLoading(false);
     }
-  }
-
-  async function handleDeleteRequest(id: number) {
+  }  async function handleDeleteRequest(id: number) {
     if (!confirm("Are you sure you want to delete this request?")) return;
     try {
       const token = localStorage.getItem("token");
