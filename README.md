@@ -1,4 +1,4 @@
-# Smart Blood Management System (SBMS) — Gaza MVP
+# Smart Blood Management System (SBMS), Gaza MVP
 
 A centralized, responsive web platform built to bridge the critical gap between blood donors, hospitals, and blood banks in Gaza. By replacing manual paperwork and fragmented social media coordination, SBMS provides real-time tracking for blood inventory, organized appointment scheduling, and rapid deployment of urgent blood requests.
 
