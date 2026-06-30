@@ -39,16 +39,16 @@ The system is built on a standard **Three-Tier Architecture** to keep the interf
 
 To mimic a real-world software engineering environment, our team operated under a structured **Scrum Framework**, with each of the 10 members owning a vital part of the development lifecycle[cite: 1]:
 
-* 🔴 **Person 1 — Scrum Master / Analyst:** Facilitated Sprint planning, managed the Jira board, and translated the Gaza MVP clinical needs into technical user stories[cite: 1].
-* 🔴 **Person 2 — UI/UX Designer:** Crafted the system's visual identity, wireframes, and responsive user journeys for both desktop and mobile users[cite: 1].
-* 🔴 **Person 3 — Frontend Public Pages:** Developed the landing experience, facility search filters, and static information portals using React.js[cite: 1].
-* 🔴 **Person 4 — Frontend Donor Flow:** Built the interactive donor dashboard, onboarding forms, and the step-by-step appointment booking interface[cite: 1].
-* 🔴 **Person 5 — Frontend Requests & Admin UI:** Engineered the complex dashboard views for facility admins to manage slots, view inventory, and issue urgent blood alerts[cite: 1].
-* 🔴 **Person 6 — Backend Auth & Users:** Implemented the Node.js authentication middleware, JWT token handling, and role-based route guarding[cite: 1].
-* 🔴 **Person 7 — Backend Blood Banks & Appointments:** Developed the core business logic and API endpoints for managing facility timetables and booking status mutations[cite: 1].
-* 🔴 **Person 8 — Backend DB, Inventory & Requests:** Designed the PostgreSQL schemas via Prisma, handled blood unit ledger logic, and coded the urgent bulletin dispatch system[cite: 1].
-* 🔴 **Person 9 — QA / Testing / Deployment:** Created the Postman API testing suites, documented manual test matrices, and managed version control tagging and final build staging[cite: 1].
-* 🔴 **Person 10 — Project Owner / Technical Supervisor:** Maintained the overall system architecture integrity, supervised integration milestones, and aligned the project deliverables with engineering standards[cite: 1].
+* 🔴 **Person 1  Scrum Master / Analyst:** Facilitated Sprint planning, managed the Jira board, and translated the Gaza MVP clinical needs into technical user stories[cite: 1].
+* 🔴 **Person 2  UI/UX Designer:** Crafted the system's visual identity, wireframes, and responsive user journeys for both desktop and mobile users[cite: 1].
+* 🔴 **Person 3  Frontend Public Pages:** Developed the landing experience, facility search filters, and static information portals using React.js[cite: 1].
+* 🔴 **Person 4  Frontend Donor Flow:** Built the interactive donor dashboard, onboarding forms, and the step-by-step appointment booking interface[cite: 1].
+* 🔴 **Person 5  Frontend Requests & Admin UI:** Engineered the complex dashboard views for facility admins to manage slots, view inventory, and issue urgent blood alerts[cite: 1].
+* 🔴 **Person 6  Backend Auth & Users:** Implemented the Node.js authentication middleware, JWT token handling, and role-based route guarding[cite: 1].
+* 🔴 **Person 7  Backend Blood Banks & Appointments:** Developed the core business logic and API endpoints for managing facility timetables and booking status mutations[cite: 1].
+* 🔴 **Person 8  Backend DB, Inventory & Requests:** Designed the PostgreSQL schemas via Prisma, handled blood unit ledger logic, and coded the urgent bulletin dispatch system[cite: 1].
+* 🔴 **Person 9  QA / Testing / Deployment:** Created the Postman API testing suites, documented manual test matrices, and managed version control tagging and final build staging[cite: 1].
+* 🔴 **Person 10  Project Owner / Technical Supervisor:** Maintained the overall system architecture integrity, supervised integration milestones, and aligned the project deliverables with engineering standards[cite: 1].
 
 ---
 
