@@ -269,3 +269,108 @@ export async function fetchHealthReports(): Promise<HealthReport[]> {
   if (!response.ok) return [];
   return response.json() as Promise<HealthReport[]>;
 }
+
+// ── Auth Types ──────────────────────────────────────────────────
+
+export interface AuthUser {
+  id: number;
+  full_name: string;
+  email: string;
+  role: string;
+  [key: string]: unknown;
+}
+
+export interface AuthResult {
+  success: boolean;
+  message: string;
+  user?: AuthUser;
+  token?: string;
+  errors?: Record<string, string>;
+}
+
+// ── Login ───────────────────────────────────────────────────────
+
+export async function loginUser(email: string, password: string): Promise<AuthResult> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const body = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: (body as { message?: string }).message ?? "Invalid email or password.",
+      };
+    }
+
+    const data = body as { token: string; user: AuthUser; role: string };
+    localStorage.setItem("auth_token", data.token);
+    localStorage.setItem("auth_user", JSON.stringify(data.user));
+
+    return { success: true, message: "Login successful", user: data.user, token: data.token };
+  } catch {
+    return { success: false, message: "Unable to reach the server. Please try again." };
+  }
+}
+
+// ── Register ────────────────────────────────────────────────────
+
+export interface RegisterPayload {
+  full_name: string;
+  email: string;
+  password: string;
+  phone: string;
+  city?: string;
+  blood_type?: string;
+  gender?: string;
+  birth_date?: string;
+}
+
+export async function registerUser(payload: RegisterPayload): Promise<AuthResult> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const body = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: (body as { message?: string }).message ?? "Registration failed.",
+        errors: (body as { errors?: Record<string, string> }).errors,
+      };
+    }
+
+    const data = body as { token: string; user: AuthUser };
+    localStorage.setItem("auth_token", data.token);
+    localStorage.setItem("auth_user", JSON.stringify(data.user));
+
+    return { success: true, message: "Account created successfully", user: data.user, token: data.token };
+  } catch {
+    return { success: false, message: "Unable to reach the server. Please try again." };
+  }
+}
+
+// ── Current user helpers ───────────────────────────────────────
+
+export function getCurrentUser(): AuthUser | null {
+  const raw = localStorage.getItem("auth_user");
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as AuthUser;
+  } catch {
+    return null;
+  }
+}
+
+export function logoutUser(): void {
+  localStorage.removeItem("auth_token");
+  localStorage.removeItem("auth_user");
+}
