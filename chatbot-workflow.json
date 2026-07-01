@@ -1,0 +1,125 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "منصة ربط المتبرعين ببنوك الدم (SBMS) 👋\nأهلاً بك في منصة ربط المتبرعين ببنوك الدم. كيف يمكنني مساعدتك اليوم؟ (تبرع بالدم / طلب دم لحالة طارئة)",
+        "options": {
+          "inputPlaceholder": "اكتب استفسارك هنا...",
+          "subtitle": "مساعدك الذكي للتبرع بالدم وطلب الاستغاثة الطارئة",
+          "title": "منصة ربط المتبرعين ببنوك الدم (SBMS) 👋",
+          "customCss": ":root {\n  /* تلوين الهوية بالكامل باللون الزيتي المتناسق مع النظام */\n  --chat--color--primary: #00767B;\n  --chat--color--primary-shade-50: #006266;\n  --chat--color--primary--shade-100: #004d50;\n  --chat--color--secondary: #00767B;\n  --chat--color-secondary-shade-50: #006266;\n  --chat--color-white: #fff;\n  --chat--color-light: #f5f7fb;\n  --chat--color-light-shade-50: #e1e6f0;\n  --chat--color-dark: #101330;\n\n  /* ضبط الخلفيات وألوان الرسائل */\n  --chat--message--bot--background: var(--chat--color-white);\n  --chat--message--bot--color: var(--chat--color-dark);\n  --chat--message--user--background: var(--chat--color--primary);\n  --chat--message--user--color: var(--chat--color-white);\n  \n  /* تعديل لون خلفية الهيدر بالكامل إلى الزيتي المتناسق */\n  --chat--header--background: #00767B !important; \n  --chat--input--send--button--color: var(--chat--color--primary);\n}\n\n/* تعديل الهيدر لجعل النصوص في المنتصف تماماً */\n.chat-header {\n  background-color: #00767B !important;\n  display: flex !important;\n  flex-direction: column !important;\n  align-items: center !important; /* توسيط العناصر أفقياً */\n  justify-content: center !important;\n  text-align: center !important;  /* توسيط النصوص */\n  padding: 1.5rem !important;\n}\n\n.chat-header h1, .chat-header h2, .chat-header p {\n  text-align: center !important;\n  width: 100% !important;\n  margin: 0.2rem 0 !important;\n}\n\n/* حل مشكلة تمدد البوكسات وجعلها تحتضن النص فقط + دعم المحاذاة العربية */\n.chat-messages-list {\n  direction: rtl !important; \n  display: flex !important;\n  flex-direction: column !important;\n}\n\n.chat-message {\n  width: fit-content !important; \n  max-width: 75% !important;   \n  word-break: break-word !important;\n  text-align: right !important; \n}\n\n/* دفع رسائل المستخدم لجهة اليمين ورسائل البوت لجهة اليسار بشكل صحيح */\n.chat-message.user {\n  margin-left: 0 !important;\n  margin-right: auto !important;\n  align-self: flex-start !important;\n}\n\n.chat-message.bot {\n  margin-right: 0 !important;\n  margin-left: auto !important;\n  align-self: flex-end !important;\n}\n\n/* ضبط خانة إدخال النص بالأسفل لتكتب من اليمين */\n.chat-input textarea {\n  direction: rtl !important;\n  text-align: right !important;\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -144,
+        -48
+      ],
+      "id": "d52fcdf8-70bc-429d-9821-36cfe2a8547d",
+      "name": "When chat message received",
+      "webhookId": "6d84ba10-fa52-40a0-bf6f-1989118b1b31"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "أنت المساعد الذكي الرسمي لمنصة SBMS (Smart Blood Management System)، وهي منصة إلكترونية تهدف إلى تسهيل وتنظيم عمليات التبرع بالدم من خلال ربط المتبرعين، وبنوك الدم، والمستشفيات، وإدارات بنوك الدم في نظام واحد متكامل.\n\nمهمتك الأساسية هي مساعدة المستخدمين على فهم المنصة واستخدام جميع خدماتها بسهولة، والإجابة عن استفساراتهم بطريقة واضحة، دقيقة، واحترافية.\n\nيجب أن تقدم المساعدة للفئات التالية:\n\nالزائر (Visitor)\nالمتبرع (Donor)\nمسؤول بنك الدم أو المنشأة الصحية (Facility Admin)\nمسؤول النظام (System Admin)\n\nتشمل مسؤولياتك ما يلي:\n\nشرح فكرة المنصة وأهدافها.\nشرح كيفية إنشاء حساب جديد وتسجيل الدخول.\nمساعدة المتبرعين في البحث عن بنوك الدم حسب المدينة أو فصيلة الدم.\nشرح كيفية عرض تفاصيل بنك الدم.\nشرح كيفية حجز موعد للتبرع بالدم.\nشرح كيفية متابعة المواعيد والإشعارات.\nشرح كيفية إدارة المخزون الدموي وطلبات الدم العاجلة لمسؤولي بنوك الدم.\nالإجابة عن الأسئلة المتعلقة بخدمات المنصة وآلية عملها.\nمساعدة المستخدمين في حل المشكلات الشائعة المتعلقة باستخدام المنصة.\n\nالتزم دائمًا بما يلي:\n\nاستخدم لغة عربية واضحة وسهلة الفهم.\nإذا كتب المستخدم باللغة الإنجليزية، فقم بالرد باللغة الإنجليزية.\nاجعل أسلوبك ودودًا واحترافيًا ومختصرًا عند الحاجة، ومفصلًا إذا طلب المستخدم ذلك.\nإذا لم تكن متأكدًا من معلومة، فصرح بذلك ولا تخترع معلومات.\nلا تقدم معلومات غير موجودة في النظام أو غير مدعومة من المنصة.\nلا تكشف أي معلومات خاصة بالمستخدمين أو البيانات الداخلية للنظام.\nاحترم خصوصية المستخدمين في جميع الأوقات.\n\nفي حال سأل المستخدم عن أمور طبية، يمكنك تقديم معلومات عامة فقط، ولكن لا تقدم تشخيصًا طبيًا أو وصفات علاجية أو بدائل عن الطبيب. وفي الحالات الطارئة، انصح المستخدم بالتوجه إلى أقرب مستشفى أو التواصل مع الجهات الطبية المختصة.\n\nإذا كان سؤال المستخدم خارج نطاق منصة SBMS، فأجب بإيجاز إن كانت المعلومة عامة، ثم أوضح أن دورك الأساسي هو مساعدة المستخدمين في استخدام منصة SBMS وخدماتها.\n\nإذا احتاج المستخدم إلى خطوات تنفيذية، فقدمها له خطوة بخطوة بطريقة مرتبة وسهلة.\n\nاحرص دائمًا على أن تكون إجاباتك دقيقة، منظمة، ومبنية على أفضل الممارسات في تجربة المستخدم وخدمة العملاء.\n\nأنصح أيضًا بإضافة قاعدة أخيرة مهمة جدًا:\n\nلا تفترض أي معلومات غير موجودة في قاعدة بيانات المنصة أو في السياق المرسل إليك. إذا لم تتوفر لديك المعلومة، أخبر المستخدم بذلك بوضوح واطلب منه توضيح السؤال أو التواصل مع إدارة المنصة عند الحاجة."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        64,
+        -48
+      ],
+      "id": "8fc10954-0949-4f91-a53a-2065c561abe3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -80,
+        160
+      ],
+      "id": "6e09be39-4832-49fd-adb4-b5197b367153",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "o2aQY9GMhH8Z2uWg",
+          "name": "Google Gemini(PaLM) Api account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "=customKey",
+        "sessionKey": "={{ $json.sessionId }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        80,
+        160
+      ],
+      "id": "8b621b3a-bf5e-4e0d-89dd-8aafa36d3cba",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "bf287af4-7654-493d-b1f7-d5a99ededd6c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "75ffd84cebe2ec1b89d1c3911ecf84c0f63931088c395f96216bedfdf1734140"
+  },
+  "nodeGroups": [],
+  "id": "NUHVqLqnqKdvVLvy",
+  "tags": []
+}
