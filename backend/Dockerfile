@@ -10,9 +10,5 @@ COPY backend/ .
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 RUN chmod -R 775 storage bootstrap/cache
 
-
-RUN php artisan config:clear
-RUN php artisan cache:clear
-
 EXPOSE 10000
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+CMD php artisan config:clear && php artisan cache:clear && php artisan serve --host=0.0.0.0 --port=$PORT
