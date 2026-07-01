@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { loginUser, registerUser, getCurrentUser, logoutUser } from "./services/authService";
+import type { AuthUser } from "./services/authService";
 import type { InputHTMLAttributes, MouseEvent, ReactNode, ChangeEvent, DragEvent, FormEvent } from "react";
 import { updateDonorProfile, updateFacilityProfile, uploadHealthReport, validateDonorProfile, validateFacilityProfile } from "./services/authService";
 import type { DonorProfileData, FacilityProfileData, HealthReport } from "./services/authService";
