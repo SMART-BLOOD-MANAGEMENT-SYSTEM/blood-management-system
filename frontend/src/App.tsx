@@ -2994,8 +2994,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { InputHTMLAttributes, MouseEvent, ReactNode, ChangeEvent, DragEvent, FormEvent } from "react";
-import { updateDonorProfile, updateFacilityProfile, uploadHealthReport, validateDonorProfile, validateFacilityProfile, loginUser, registerUser, getCurrentUser, logoutUser } from "./services/authService";
-import type { DonorProfileData, FacilityProfileData, HealthReport, AuthUser } from "./services/authService";
+import { updateDonorProfile, updateFacilityProfile, uploadHealthReport, validateDonorProfile, validateFacilityProfile, loginUser, registerUser, getCurrentUser, logoutUser, fetchProfile, fetchMyAppointments } from "./services/authService";
+import type { DonorProfileData, FacilityProfileData, HealthReport, AuthUser, AppointmentRecord } from "./services/authService";
 import {
   createBloodRequest,
   createInventoryRecord,
@@ -3953,6 +3953,19 @@ function DashboardShell({ title, subtitle, links, active, children, user, onLogo
 function DonorDashboard() {
   const [apptCancelled, setApptCancelled] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [nextAppt, setNextAppt] = useState<AppointmentRecord | null>(null);
+  const [loadingAppt, setLoadingAppt] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchMyAppointments().then((appts) => {
+      if (!isMounted) return;
+      const upcoming = appts.find((a) => a.status === "pending" || a.status === "accepted") ?? null;
+      setNextAppt(upcoming);
+      setLoadingAppt(false);
+    });
+    return () => { isMounted = false; };
+  }, []);
 
   function handleCancelAppt() {
     setApptCancelled(true);
@@ -3965,25 +3978,26 @@ function DonorDashboard() {
       <PageTitle title="Welcome back" subtitle="Here is your donation summary and recent activity." />
       <StatGrid
         stats={[
-          ["Total Donations", "3", "Last: 2 months ago", "teal", "heart"],
-          ["Upcoming Appointments", apptCancelled ? "0" : "1", apptCancelled ? "No upcoming" : "May 28, 2026", "blue", "calendar"],
-          ["Urgent Requests Match", "4", "Matching O+ blood type", "red", "warning"],
+          ["Total Donations", "—", "Coming soon", "teal", "heart"],
+          ["Upcoming Appointments", apptCancelled ? "0" : nextAppt ? "1" : "0", apptCancelled ? "No upcoming" : nextAppt ? String(nextAppt.date ?? nextAppt.appointment_date ?? "") : "None", "blue", "calendar"],
+          ["Urgent Requests Match", "4", "Matching your blood type", "red", "warning"],
           ["Nearby Facilities", "6", "Within Gaza area", "teal", "map"],
         ]}
       />
       <div className="split-grid">
         <Panel title="Next Appointment" subtitle="Your upcoming blood donation appointment">
-          {apptCancelled ? (
+          {loadingAppt ? (
+            <InlineFeedback icon="calendar" text="Loading appointment..." />
+          ) : apptCancelled || !nextAppt ? (
             <EmptyState icon="calendar" title="No upcoming appointments" actionHref="#donor-search" actionLabel="Book an Appointment" />
           ) : (
             <div className="appointment-mini">
               <div className="mini-content">
-                <strong>Al-Shifa Hospital</strong>
-                <span>May 28, 2026 at 10:00 AM</span>
+                <strong>{nextAppt.blood_bank?.name ?? nextAppt.facility_name ?? "Facility"}</strong>
+                <span>{nextAppt.date ?? nextAppt.appointment_date} {nextAppt.time ? `at ${nextAppt.time}` : ""}</span>
               </div>
               <div className="appointment-actions">
-                <BloodTypeBadge type="O+" />
-                <StatusBadge tone="pending">Pending</StatusBadge>
+                <StatusBadge tone={nextAppt.status === "accepted" ? "accepted" : "pending"}>{nextAppt.status}</StatusBadge>
                 <button className="btn-icon btn-icon-danger" type="button" title="Cancel Appointment" onClick={handleCancelAppt}><Icon name="x" /></button>
               </div>
             </div>
@@ -4011,16 +4025,35 @@ function DonorDashboard() {
 
 function DonorProfile() {
   const [profile, setProfile] = useState<DonorProfileData>({
-    full_name: "Nourhan Muneer Elmassry",
-    email: "nourhan@example.com",
-    phone: "+970-59-123-4567",
-    blood_type: "O+",
-    gender: "Female",
-    birth_date: "1998-03-15",
-    city: "Gaza City",
+    full_name: "",
+    email: "",
+    phone: "",
+    blood_type: "",
+    gender: "",
+    birth_date: "",
+    city: "",
     is_eligible: true,
     notification_preference: "Both",
   });
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchProfile().then((user) => {
+      if (isMounted && user) {
+        setProfile((prev) => ({
+          ...prev,
+          full_name: (user.full_name as string) ?? prev.full_name,
+          email: (user.email as string) ?? prev.email,
+          phone: (user.phone as string) ?? prev.phone,
+          blood_type: (user.blood_type as string) ?? prev.blood_type,
+          gender: (user.gender as string) ?? prev.gender,
+          birth_date: (user.birth_date as string) ?? prev.birth_date,
+          city: (user.city as string) ?? prev.city,
+        }));
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -6072,6 +6105,7 @@ function Icon({ name }: { name: IconName }) {
 }
 
 export default App;
+
 
 
 // export default App;
