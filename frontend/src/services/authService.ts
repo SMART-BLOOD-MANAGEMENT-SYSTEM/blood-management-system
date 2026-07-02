@@ -374,3 +374,57 @@ export function logoutUser(): void {
   localStorage.removeItem("auth_token");
   localStorage.removeItem("auth_user");
 }
+
+// ── Fetch real logged-in user profile ────────────────────────────
+
+export async function fetchProfile(): Promise<AuthUser | null> {
+  const token = localStorage.getItem("auth_token");
+  if (!token) return null;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/profile`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) return null;
+    return (await response.json()) as AuthUser;
+  } catch {
+    return null;
+  }
+}
+
+// ── Fetch donor's real appointments ───────────────────────────────
+
+export interface AppointmentRecord {
+  id: number;
+  facility_name?: string;
+  blood_bank?: { name: string };
+  status: string;
+  appointment_date?: string;
+  date?: string;
+  time?: string;
+  [key: string]: unknown;
+}
+
+export async function fetchMyAppointments(): Promise<AppointmentRecord[]> {
+  const token = localStorage.getItem("auth_token");
+  if (!token) return [];
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/my-appointments`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return Array.isArray(data) ? data : (data.data ?? []);
+  } catch {
+    return [];
+  }
+}
